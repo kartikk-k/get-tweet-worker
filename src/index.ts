@@ -15,6 +15,7 @@ import puppeteer, { Browser, BrowserWorker, ActiveSession } from "@cloudflare/pu
 interface Env {
 	MYBROWSER: Fetcher;
 	BROWSER_KV_DEMO: KVNamespace;
+	SECRET_KEY: string;
 }
 
 export interface Tweet {
@@ -105,11 +106,15 @@ export interface ResponseTweet extends SanitizedTweet {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-
-		if (request.method !== 'POST') {
+		if (request.method !== 'GET') {
 			return new Response("Tweet not found", { status: 404 });
 		}
-
+		
+		const authToken = request.headers.get('Authorization')?.split(' ')[1];
+		if(authToken !== env.SECRET_KEY){
+			return new Response("Unauthorized", { status: 401 });
+		}
+		
 		const { searchParams } = new URL(request.url);
 		let id = searchParams.get("id");
 
