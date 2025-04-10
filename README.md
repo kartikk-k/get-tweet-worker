@@ -15,6 +15,7 @@ A Cloudflare Worker that fetches and processes tweets using Puppeteer. This work
 - Handles session management for Puppeteer
 - Caching support (via KV storage)
 - Error handling for invalid tweets
+- Secure API access with authentication
 
 ## Prerequisites
 
@@ -31,7 +32,22 @@ A Cloudflare Worker that fetches and processes tweets using Puppeteer. This work
    npm install
    ```
 
-3. Configure your Cloudflare Workers environment:
+3. Generate a secret key (optional):
+   ```bash
+   openssl rand -base64 32
+   ```
+
+4. Set up your secret key:
+   - For local development, create a `.dev.vars` file:
+     ```
+     SECRET_KEY="your-generated-secret"
+     ```
+   - For production, set the secret using wrangler:
+     ```bash
+     wrangler secret put SECRET_KEY
+     ```
+
+5. Configure your Cloudflare Workers environment:
    - Create a `wrangler.jsonc` file with your configuration
    - Set up the required bindings:
      - `MYBROWSER`: Browser Worker binding
@@ -52,7 +68,14 @@ The worker will be available at `http://localhost:8787`
 ### Endpoint
 
 ```
-POST /?id=<tweet_id>
+GET /?id=<tweet_id>
+```
+
+### Authentication
+
+Include the secret key in the Authorization header:
+```
+Authorization: Bearer <your-secret-key>
 ```
 
 ### Response Format
